@@ -25,14 +25,26 @@ export const filterTask = asyncHandler(async (req, res) => {
     let condition
     switch (operator) {
       case 'is':
-        if (field === 'tags') {
+        if (field === 'dueDate') {
+          const [startDate, endDate] = value
+          condition = {
+            [field]: { $gte: new Date(startDate), $lte: new Date(endDate) },
+          }
+        } else if (field === 'tags') {
           condition = { [field]: { $all: value } }
         } else {
           condition = { [field]: value }
         }
         break
       case 'isNot':
-        if (field === 'tags') {
+        if (field === 'dueDate') {
+          const [startDate, endDate] = value
+          condition = {
+            [field]: {
+              $not: { $gte: new Date(startDate), $lte: new Date(endDate) },
+            },
+          }
+        } else if (field === 'tags') {
           condition = { [field]: { $not: { $all: value } } }
         } else {
           condition = { [field]: { $ne: value } }
@@ -56,5 +68,9 @@ export const filterTask = asyncHandler(async (req, res) => {
 
   const filteredTask = await Task.find(filterQuery)
 
-  res.json(filteredTask)
+  res.json({
+    status: 'success',
+    length: filteredTask.length,
+    data: filteredTask,
+  })
 })
